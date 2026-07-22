@@ -12,63 +12,39 @@ export const pokemonNameMap: Record<string, string> = Object.fromEntries(
  * 根据英文名称获取中文名称；若未找到则返回原英文名称
  */
 export function getPokemonNameCN(enName: string): string {
-  const suffixes = [
-    / Mega Redux$/,
-    / Redux$/,
-    / Mega$/,
-    / Gmax$/,
-    / Alola$/,
-    / Galar$/,
-    / Hisui$/,
-    / Paldea$/,
-    / Polar$/,
-    / Sandstorm$/,
-    / Ocean$/,
-    / Continental$/,
-    / Elegant$/,
-    / Garden$/,
-    / High Plains$/,
-    / Monsoon$/,
-    / Savanna$/,
-    / Sun$/,
-    / Tundra$/,
-    / Douse Drive$/,
-    / Shock Drive$/,
-    / Burn Drive$/,
-    / Chill Drive$/,
+  const suffixMap: [RegExp, string][] = [
+    [/ Mega Redux$/, ' Mega R'],
+    [/ Mega X$/, ' Mega X'],
+    [/ Mega Y$/, ' Mega Y'],
+    [/ Redux$/, ' R'],
+    [/ Mega$/, ' Mega'],
+    [/ Gmax$/, ' Gmax'],
+    [/ Alola$/, ' Alola'],
+    [/ Galar$/, ' Galar'],
+    [/ Hisui$/, ' Hisui'],
+    [/ Paldea$/, ' Paldea'],
+    [/ Polar$/, ' Polar'],
+    [/ Sandstorm$/, ' Sandstorm'],
+    [/ Ocean$/, ' Ocean'],
+    [/ Continental$/, ' Continental'],
+    [/ Elegant$/, ' Elegant'],
+    [/ Garden$/, ' Garden'],
+    [/ High Plains$/, ' High Plains'],
+    [/ Monsoon$/, ' Monsoon'],
+    [/ Savanna$/, ' Savanna'],
+    [/ Sun$/, ' Sun'],
+    [/ Tundra$/, ' Tundra'],
+    [/ Douse Drive$/, ' Douse Drive'],
+    [/ Shock Drive$/, ' Shock Drive'],
+    [/ Burn Drive$/, ' Burn Drive'],
+    [/ Chill Drive$/, ' Chill Drive'],
   ];
   
-  const cnSuffixes = [
-    ' Mega R',
-    ' R',
-    ' Mega',
-    ' Gmax',
-    ' Alola',
-    ' Galar',
-    ' Hisui',
-    ' Paldea',
-    ' Polar',
-    ' Sandstorm',
-    ' Ocean',
-    ' Continental',
-    ' Elegant',
-    ' Garden',
-    ' High Plains',
-    ' Monsoon',
-    ' Savanna',
-    ' Sun',
-    ' Tundra',
-    ' Douse Drive',
-    ' Shock Drive',
-    ' Burn Drive',
-    ' Chill Drive',
-  ];
-  
-  for (let i = 0; i < suffixes.length; i++) {
-    if (suffixes[i].test(enName)) {
-      const baseName = enName.replace(suffixes[i], '');
+  for (const [re, cnSuffix] of suffixMap) {
+    if (re.test(enName)) {
+      const baseName = enName.replace(re, '');
       const baseCn = pokemonNameMap[baseName] ?? baseName;
-      return baseCn + cnSuffixes[i];
+      return baseCn + cnSuffix;
     }
   }
   
