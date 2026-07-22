@@ -1035,6 +1035,8 @@ export const POKEMONS: Pokemon[] = [
   { dex: 1023, nameCn: `铁头壳`, nameEn: `Iron Crown`, types: [`钢`, `超能`] },
   { dex: 1024, nameCn: `太乐巴戈斯`, nameEn: `Terapagos`, types: [`一般`] },
   { dex: 1025, nameCn: `桃歹郎`, nameEn: `Pecharunt`, types: [`毒`, `幽灵`] },
+  { dex: 1026, nameCn: `比瓦登`, nameEn: `Bewarden`, types: [`一般`, `幽灵`] },
+  { dex: 1027, nameCn: `土龙节节节节`, nameEn: `Dududunsparce`, types: [`一般`] },
 ];
 
 export function findPokemon(name: string): Pokemon | undefined {

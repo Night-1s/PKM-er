@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { loadERGameData, ERSpecies, ERGameData, getTypes, getAbilities, getMoves, getMoveName, getBST, typeColors, typeNamesCN, ERAbility } from '../data/erPokedex';
+import { loadERGameData, ERSpecies, ERGameData, getTypes, getAbilities, getMoves, getMoveName, getBST, typeColors, typeNamesCN, ERAbility, getTypeColor } from '../data/erPokedex';
 import { getPokemonNameCN } from '../data/translations';
 import { ABILITIES } from '../data/abilities';
 import SmartPokemonImg from '../components/SmartPokemonImg';
@@ -198,18 +198,17 @@ export default function PokedexPage() {
                     )}
                   </div>
                   <div className="flex gap-1">
-                    {dedupeTypes(sp.stats.types.map(t => data.typeT[t])).map((typeName, i) => {
-                      const typeNameUpper = typeName.toUpperCase();
-                      return (
-                        <span
-                          key={i}
-                          className={`px-2 py-0.5 text-xs text-white rounded ${typeColors[typeNameUpper] || 'bg-gray-400'}`}
-                        >
-                          {typeNamesCN[typeNameUpper] || typeName}
-                        </span>
-                      );
-                    })}
-                  </div>
+                  {dedupeTypes(sp.stats.types.map(t => data.typeT[t])).map((typeName, i) => {
+                    return (
+                      <span
+                        key={i}
+                        className={`px-2 py-0.5 text-xs text-white rounded ${getTypeColor(typeName)}`}
+                      >
+                        {typeNamesCN[typeName.toUpperCase()] || typeName}
+                      </span>
+                    );
+                  })}
+                </div>
                 </div>
               ))}
             </div>
@@ -235,7 +234,7 @@ export default function PokedexPage() {
 }
 
 function SpeciesDetail({ species, data }: { species: ERSpecies; data: ERGameData }) {
-  const types = dedupeTypes(getTypes(species.stats.types, data.typeT));
+  const types = dedupeTypes(getTypes(species.stats.types, data.typeT).map(t => t.trim()));
   const abilities = getAbilities(species.stats.abis, data.abilities);
   const innates = getAbilities(species.stats.inns, data.abilities);
   const bst = getBST(species.stats.base);
@@ -263,7 +262,7 @@ function SpeciesDetail({ species, data }: { species: ERSpecies; data: ERGameData
               {types.map((type, i) => (
                 <span
                   key={i}
-                  className={`px-4 py-1.5 text-white rounded-xl font-medium shadow-sm ${typeColors[type.toUpperCase()] || 'bg-gray-400'}`}
+                  className={`px-4 py-1.5 text-white rounded-xl font-medium shadow-sm ${getTypeColor(type)}`}
                 >
                   {getTypeCN(type)}
                 </span>

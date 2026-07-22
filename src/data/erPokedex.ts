@@ -118,7 +118,18 @@ export function getSpeciesName(species: ERSpecies): string {
 }
 
 export function getTypes(typeIds: number[], types: string[]): string[] {
-  return typeIds.map(id => types[id] || `Type${id}`);
+  return typeIds.map(id => {
+    const typeName = types[id];
+    if (!typeName || typeName === 'None' || typeName === 'Mystery') {
+      return 'NORMAL';
+    }
+    return typeName;
+  });
+}
+
+export function getTypeColor(typeName: string): string {
+  const normalized = typeName.toUpperCase().trim();
+  return typeColors[normalized] || 'bg-gray-400';
 }
 
 export function getAbilityName(abilityId: number, abilities: ERAbility[]): string {
