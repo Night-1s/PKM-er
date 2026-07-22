@@ -263,7 +263,7 @@ function SpeciesDetail({ species, data }: { species: ERSpecies; data: ERGameData
               {types.map((type, i) => (
                 <span
                   key={i}
-                  className={`px-4 py-1.5 text-white rounded-xl font-medium shadow-sm ${typeColors[type] || 'bg-gray-400'}`}
+                  className={`px-4 py-1.5 text-white rounded-xl font-medium shadow-sm ${typeColors[type.toUpperCase()] || 'bg-gray-400'}`}
                 >
                   {getTypeCN(type)}
                 </span>
