@@ -13,6 +13,13 @@ export default defineConfig({
   },
   build: {
     sourcemap: 'hidden',
+    rollupOptions: {
+      output: {
+        entryFileNames: 'assets/index-[hash].v21.js',
+        chunkFileNames: 'assets/[name]-[hash].v21.js',
+        assetFileNames: 'assets/[name]-[hash].v21.[ext]',
+      },
+    },
   },
   plugins: [
     react({
