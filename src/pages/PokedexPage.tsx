@@ -79,7 +79,22 @@ export default function PokedexPage() {
     return data.species.filter(sp => {
       if (sp.id <= 0) return false;
       
-      const matchName = sp.name.toLowerCase().includes(search.toLowerCase()) ||
+      const name = sp.name.toLowerCase();
+      if (name.includes(' redux') && !name.includes('mega redux')) return false;
+      if (name.includes(' drive')) return false;
+      if (name.includes(' polar')) return false;
+      if (name.includes(' sandstorm')) return false;
+      if (name.includes(' ocean')) return false;
+      if (name.includes(' continental')) return false;
+      if (name.includes(' elegant')) return false;
+      if (name.includes(' garden')) return false;
+      if (name.includes(' high plains')) return false;
+      if (name.includes(' monsoon')) return false;
+      if (name.includes(' savanna')) return false;
+      if (name.includes(' sun')) return false;
+      if (name.includes(' tundra')) return false;
+      
+      const matchName = name.includes(search.toLowerCase()) ||
         getPokemonNameCN(sp.name).toLowerCase().includes(search.toLowerCase());
       
       let matchType = true;
