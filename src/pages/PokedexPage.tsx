@@ -37,12 +37,17 @@ const getPokemonImgUrls = (name: string, dexId?: number): string[] => {
   if (dexId && dexId > 0) {
     urls.push(`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${dexId}.png`);
     urls.push(`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${dexId}.png`);
+    urls.push(`https://pokeapi.co/api/v2/pokemon/${dexId}/sprites/other/home`);
   }
+  
+  urls.push(`https://raw.githubusercontent.com/msikma/pokesprite/master/pokemon-gen8/home/${baseName}.png`);
+  urls.push(`https://raw.githubusercontent.com/msikma/pokesprite/master/pokemon-gen8/home/${baseName.replace(/-/g, '')}.png`);
   
   const simpleName = baseName.split('-')[0];
   if (simpleName !== baseName) {
     urls.push(`/pokemon-images/${simpleName}.png`);
     urls.push(`https://img.pokemondb.net/sprites/home/normal/${simpleName}.png`);
+    urls.push(`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${simpleName}.png`);
   }
   
   return urls;
