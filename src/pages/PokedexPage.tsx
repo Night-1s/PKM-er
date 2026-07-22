@@ -14,17 +14,12 @@ const getAbilityDesc = (abilityName: string): string => {
 const ER_SPRITE_BASE = 'https://raw.githubusercontent.com/ForwardFeed/ER-nextdex/main/static/sprites';
 
 const getPokemonImgUrls = (name: string, dexId?: number): string[] => {
-  // 作者图鉴的图片命名：大写英文名，特殊字符处理
   let spriteName = name.toUpperCase();
-  // 去掉 ER 后缀
-  spriteName = spriteName.replace(/ REDUX$/, '');
-  spriteName = spriteName.replace(/ REDUX MEGA$/, '_MEGA');
+  spriteName = spriteName.replace(/ MEGA REDUX$/, '_REDUX_MEGA');
+  spriteName = spriteName.replace(/ REDUX$/, '_REDUX');
   spriteName = spriteName.replace(/ MEGA$/, '_MEGA');
-  // 性别符号
   spriteName = spriteName.replace(/♀/g, '_F').replace(/♂/g, '_M');
-  // 空格转下划线
   spriteName = spriteName.replace(/\s+/g, '_');
-  // 去掉其他后缀
   spriteName = spriteName.replace(/-GMAX$/, '_GMAX');
   spriteName = spriteName.replace(/-ALOLA$/, '_ALOLA');
   spriteName = spriteName.replace(/-GALAR$/, '_GALAR');
