@@ -11,45 +11,42 @@ const getAbilityDesc = (abilityName: string): string => {
   return ability?.desc || '';
 };
 
+const ER_SPRITE_BASE = 'https://raw.githubusercontent.com/ForwardFeed/ER-nextdex/main/static/sprites';
+
 const getPokemonImgUrls = (name: string, dexId?: number): string[] => {
-  let baseName = name.toLowerCase();
-  baseName = baseName.replace(/ redux$/, '');
-  baseName = baseName.replace(/ redux mega$/, '');
-  baseName = baseName.replace(/ mega$/, '');
-  baseName = baseName.replace(/(-gmax|-alola|-galar|-hisui|-paldea|-mega)$/, '');
-  
-  if (baseName.includes('♀')) {
-    baseName = baseName.replace(/♀/g, '-f');
-  }
-  if (baseName.includes('♂')) {
-    baseName = baseName.replace(/♂/g, '-m');
-  }
-  
-  baseName = baseName.replace(/[\s\u2640\u2642]/g, '-');
-  
+  // 作者图鉴的图片命名：大写英文名，特殊字符处理
+  let spriteName = name.toUpperCase();
+  // 去掉 ER 后缀
+  spriteName = spriteName.replace(/ REDUX$/, '');
+  spriteName = spriteName.replace(/ REDUX MEGA$/, '_MEGA');
+  spriteName = spriteName.replace(/ MEGA$/, '_MEGA');
+  // 性别符号
+  spriteName = spriteName.replace(/♀/g, '_F').replace(/♂/g, '_M');
+  // 空格转下划线
+  spriteName = spriteName.replace(/\s+/g, '_');
+  // 去掉其他后缀
+  spriteName = spriteName.replace(/-GMAX$/, '_GMAX');
+  spriteName = spriteName.replace(/-ALOLA$/, '_ALOLA');
+  spriteName = spriteName.replace(/-GALAR$/, '_GALAR');
+  spriteName = spriteName.replace(/-HISUI$/, '_HISUI');
+  spriteName = spriteName.replace(/-PALDEA$/, '_PALDEA');
+
   const urls: string[] = [];
-  
-  urls.push(`/pokemon-images/${baseName}.png`);
-  
-  urls.push(`https://img.pokemondb.net/sprites/home/normal/${baseName}.png`);
-  urls.push(`https://img.pokemondb.net/sprites/home/normal/${baseName.replace(/-/g, '')}.png`);
-  
+  // 主源：作者图鉴
+  urls.push(`${ER_SPRITE_BASE}/${spriteName}.png`);
+
+  // Mega 的基础形态作为备用
+  if (spriteName.includes('_MEGA')) {
+    const base = spriteName.replace('_MEGA', '');
+    urls.push(`${ER_SPRITE_BASE}/${base}.png`);
+  }
+
+  // dexId 兜底（PokeAPI 数字编号）
   if (dexId && dexId > 0) {
-    urls.push(`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${dexId}.png`);
     urls.push(`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${dexId}.png`);
-    urls.push(`https://pokeapi.co/api/v2/pokemon/${dexId}/sprites/other/home`);
+    urls.push(`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${dexId}.png`);
   }
-  
-  urls.push(`https://raw.githubusercontent.com/msikma/pokesprite/master/pokemon-gen8/home/${baseName}.png`);
-  urls.push(`https://raw.githubusercontent.com/msikma/pokesprite/master/pokemon-gen8/home/${baseName.replace(/-/g, '')}.png`);
-  
-  const simpleName = baseName.split('-')[0];
-  if (simpleName !== baseName) {
-    urls.push(`/pokemon-images/${simpleName}.png`);
-    urls.push(`https://img.pokemondb.net/sprites/home/normal/${simpleName}.png`);
-    urls.push(`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${simpleName}.png`);
-  }
-  
+
   return urls;
 };
 
