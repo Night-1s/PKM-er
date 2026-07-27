@@ -2,16 +2,22 @@ import { Link, useLocation } from "react-router-dom";
 import { Trophy } from "lucide-react";
 
 const NAV_ITEMS = [
-  { to: "/", label: "仪表盘", en: "Dashboard" },
+  { to: "/", label: "首页", en: "Home" },
+  { to: "/dashboard", label: "通关记录", en: "Records" },
   { to: "/pokedex", label: "图鉴", en: "Pokedex" },
+  { to: "/abilities", label: "特性", en: "Abilities" },
   { to: "/mechanics", label: "机制手册", en: "Mechanics" },
 ];
 
 export default function Navbar() {
   const location = useLocation();
   // 在属性详情页时高亮仪表盘
-  const isActive = (to: string) =>
-    to === "/" ? location.pathname === "/" : location.pathname.startsWith(to);
+  const isActive = (to: string) => {
+    if (to === "/dashboard") {
+      return location.pathname === "/dashboard" || location.pathname.startsWith("/runs/");
+    }
+    return location.pathname === to;
+  };
 
   return (
     <header className="sticky top-0 z-40 border-b border-ink-200 bg-white/85 backdrop-blur-md">
@@ -27,7 +33,7 @@ export default function Navbar() {
             <Trophy className="h-5 w-5 text-white" />
           </span>
           <div className="leading-tight">
-            <p className="text-base font-bold text-ink-800">ER 2.65 · 地狱全属性</p>
+            <p className="text-base font-bold text-ink-800">ER 2.65 · 通关记录</p>
             <p className="text-xs text-ink-500">我的通关阵容记录</p>
           </div>
         </Link>

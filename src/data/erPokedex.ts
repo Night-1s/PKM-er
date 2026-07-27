@@ -136,7 +136,7 @@ export function getAbilityName(abilityId: number, abilities: ERAbility[]): strin
   const a = abilities[abilityId];
   if (!a) return `Ability${abilityId}`;
   const cn = abilityTranslation?.[a.name];
-  return cn ? `${cn} / ${a.name}` : a.name;
+  return cn || a.name;
 }
 
 export function getMoveName(moveId: number, moves: ERMove[]): string {

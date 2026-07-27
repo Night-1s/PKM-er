@@ -22,7 +22,7 @@ export default function MechanicsPage() {
             className="inline-flex items-center gap-1.5 text-sm text-ink-500 transition-colors hover:text-ink-800"
           >
             <ArrowLeft className="h-4 w-4" />
-            返回仪表盘
+            返回通关记录
           </Link>
 
           <div className="mt-6">
@@ -254,6 +254,51 @@ export default function MechanicsPage() {
                   </p>
                 </div>
               ))}
+            </div>
+          </section>
+
+          {/* 地狱难度规则 */}
+          <section className="mb-12">
+            <h2 className="flex items-center gap-2 font-display text-xl font-bold text-ink-900">
+              <Sparkles className="h-5 w-5 text-red-500" />
+              地狱难度特殊规则
+            </h2>
+            <div className="mt-4 card p-6">
+              <p className="mb-4 text-sm text-ink-600">
+                地狱难度（HELL）是 ER 2.65 的最高难度，在高手模式基础上额外增加了 19 条限制：
+              </p>
+              <div className="space-y-3">
+                {[
+                  { text: "伪 nuzlock 模式：闪光宝可梦可无视限制，或找 NPC 投降一次解锁背包精灵", highlight: true },
+                  { text: "藤树之后对方精灵比己方高 5 级", highlight: true },
+                  { text: "道具限制：己方道具不能重复", highlight: true },
+                  { text: "对方队伍拥有至少一个额外 buff，老爹之后上升到 3 个", highlight: true },
+                  { text: "馆主有额外的馆主 buff（与路人 buff 分开计算）", highlight: true },
+                  { text: "己方精灵的 PP 不满（8→5）", highlight: false },
+                  { text: "造成睡眠的招式 PP 只有 2", highlight: false },
+                  { text: "睡觉梦话的 PP 只有 2", highlight: false },
+                  { text: "对方麻痹的精灵减速正常，但不会麻痹不动而是一定能动", highlight: false },
+                  { text: "整体伤害 -25%，对方和己方都减", highlight: true },
+                  { text: "克制类招式伤害 2 倍→1.5 倍，4 倍→2 倍", highlight: true },
+                  { text: "藤树之后对方精灵受到伤害 -10%（配合整体减伤 25% 就是 35%）", highlight: true },
+                  { text: "天性习得等级提高（实际还是 17 和 24 没变）", highlight: false },
+                  { text: "亚莎之后对方精灵会有一个非法招式", highlight: true },
+                  { text: "对方可能有多个 mega", highlight: true },
+                  { text: "己方强化最高 +3（实际好像可以加到 6）", highlight: true },
+                  { text: "己方除了必定畏缩的招式（比如拍），其他概率造成畏缩的招式必定不会畏缩", highlight: true },
+                  { text: "己方适用闪避条款（加闪避率无用）", highlight: true },
+                  { text: "铁旋之后对方精灵有额外 252 努力值", highlight: true },
+                ].map((rule, index) => (
+                  <div key={index} className="flex items-start gap-3">
+                    <span className="flex-shrink-0 font-mono text-sm text-ink-400">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <span className={`text-sm ${rule.highlight ? "text-red-600 font-medium" : "text-ink-600"}`}>
+                      {rule.text}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           </section>
 

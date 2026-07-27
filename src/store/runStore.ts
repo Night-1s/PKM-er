@@ -1,7 +1,5 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { TypeId } from "@/data/types";
-import { TYPE_IDS } from "@/data/types";
 
 export interface PartyMember {
   id: string;
@@ -16,9 +14,17 @@ export interface PartyMember {
   note?: string;
 }
 
-export interface TypeRun {
-  typeId: TypeId;
-  status: "not_started" | "in_progress" | "completed";
+export type Difficulty = "EASY" | "EXPERT" | "ELITE" | "HELL";
+export type LevelLimit = "simple" | "advanced" | "elite";
+export type RunStatus = "not_started" | "in_progress" | "completed";
+
+export interface RunRecord {
+  id: string;
+  title: string;
+  difficulty: Difficulty;
+  levelLimit: LevelLimit;
+  singleType?: TypeId;
+  status: RunStatus;
   party: PartyMember[];
   note?: string;
   completedAt?: string;
@@ -26,164 +32,183 @@ export interface TypeRun {
 }
 
 interface RunStore {
-  runs: Record<TypeId, TypeRun>;
-  setRunStatus: (typeId: TypeId, status: TypeRun["status"]) => void;
-  addPartyMember: (typeId: TypeId, member?: Partial<PartyMember>) => string;
-  updatePartyMember: (typeId: TypeId, memberId: string, patch: Partial<PartyMember>) => void;
-  removePartyMember: (typeId: TypeId, memberId: string) => void;
-  setRunNote: (typeId: TypeId, note: string) => void;
-  setCompletedAt: (typeId: TypeId, date: string) => void;
-  clearRun: (typeId: TypeId) => void;
+  records: RunRecord[];
+  addRecord: (record?: Partial<RunRecord>) => string;
+  updateRecord: (recordId: string, patch: Partial<RunRecord>) => void;
+  removeRecord: (recordId: string) => void;
+  addPartyMember: (recordId: string, member?: Partial<PartyMember>) => string;
+  updatePartyMember: (recordId: string, memberId: string, patch: Partial<PartyMember>) => void;
+  removePartyMember: (recordId: string, memberId: string) => void;
+  setRecordNote: (recordId: string, note: string) => void;
+  setRecordStatus: (recordId: string, status: RunStatus) => void;
+  setCompletedAt: (recordId: string, date: string) => void;
+  clearRecord: (recordId: string) => void;
   resetAll: () => void;
 }
 
-function emptyRun(typeId: TypeId): TypeRun {
-  return {
-    typeId,
-    status: "not_started",
-    party: [],
-    updatedAt: Date.now(),
-  };
-}
-
-function defaultRuns(): Record<TypeId, TypeRun> {
-  return TYPE_IDS.reduce(
-    (acc, id) => {
-      acc[id] = emptyRun(id);
-      return acc;
-    },
-    {} as Record<TypeId, TypeRun>,
-  );
-}
+const DIFFICULTY_CN: Record<Difficulty, string> = {
+  EASY: "简单",
+  EXPERT: "高手",
+  ELITE: "精英",
+  HELL: "地狱",
+};
 
 function genId(): string {
   return Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
 }
 
+function newRecord(partial?: Partial<RunRecord>): RunRecord {
+  const recordCount = useRunStore.getState().records.length;
+  return {
+    id: genId(),
+    title: partial?.title ?? `通关存档 ${recordCount + 1}`,
+    difficulty: partial?.difficulty ?? "HELL",
+    levelLimit: partial?.levelLimit ?? "elite",
+    singleType: partial?.singleType,
+    status: partial?.status ?? "in_progress",
+    party: partial?.party ?? [],
+    note: partial?.note,
+    completedAt: partial?.completedAt,
+    updatedAt: Date.now(),
+  };
+}
+
 export const useRunStore = create<RunStore>()(
   persist(
-    (set) => ({
-      runs: defaultRuns(),
+    (set, get) => ({
+      records: [],
 
-      setRunStatus: (typeId, status) =>
+      addRecord: (partial) => {
+        const rec = newRecord(partial);
+        set((s) => ({ records: [...s.records, rec] }));
+        return rec.id;
+      },
+
+      updateRecord: (recordId, patch) =>
         set((s) => ({
-          runs: {
-            ...s.runs,
-            [typeId]: { ...s.runs[typeId], status, updatedAt: Date.now() },
-          },
+          records: s.records.map((r) =>
+            r.id === recordId ? { ...r, ...patch, updatedAt: Date.now() } : r,
+          ),
         })),
 
-      addPartyMember: (typeId, member) => {
+      removeRecord: (recordId) =>
+        set((s) => ({ records: s.records.filter((r) => r.id !== recordId) })),
+
+      addPartyMember: (recordId, member) => {
         const id = genId();
-        set((s) => {
-          const run = s.runs[typeId];
-          if (run.party.length >= 6) return s;
-          const newMember: PartyMember = {
-            id,
-            name: member?.name ?? "",
-            form: member?.form,
-            chosenAbility: member?.chosenAbility ?? "",
-            innateAbilities: member?.innateAbilities ?? ["", "", ""],
-            moves: member?.moves ?? ["", "", "", ""],
-            note: member?.note,
-          };
-          return {
-            runs: {
-              ...s.runs,
-              [typeId]: {
-                ...run,
-                party: [...run.party, newMember],
-                status: run.status === "not_started" ? "in_progress" : run.status,
-                updatedAt: Date.now(),
-              },
-            },
-          };
-        });
+        set((s) => ({
+          records: s.records.map((r) => {
+            if (r.id !== recordId) return r;
+            if (r.party.length >= 6) return r;
+            const newMember: PartyMember = {
+              id,
+              name: member?.name ?? "",
+              form: member?.form,
+              chosenAbility: member?.chosenAbility ?? "",
+              innateAbilities: member?.innateAbilities ?? ["", "", ""],
+              moves: member?.moves ?? ["", "", "", ""],
+              note: member?.note,
+            };
+            return { ...r, party: [...r.party, newMember], updatedAt: Date.now() };
+          }),
+        }));
         return id;
       },
 
-      updatePartyMember: (typeId, memberId, patch) =>
-        set((s) => {
-          const run = s.runs[typeId];
-          return {
-            runs: {
-              ...s.runs,
-              [typeId]: {
-                ...run,
-                party: run.party.map((m) => (m.id === memberId ? { ...m, ...patch } : m)),
-                updatedAt: Date.now(),
-              },
-            },
-          };
-        }),
-
-      removePartyMember: (typeId, memberId) =>
-        set((s) => {
-          const run = s.runs[typeId];
-          return {
-            runs: {
-              ...s.runs,
-              [typeId]: {
-                ...run,
-                party: run.party.filter((m) => m.id !== memberId),
-                updatedAt: Date.now(),
-              },
-            },
-          };
-        }),
-
-      setRunNote: (typeId, note) =>
+      updatePartyMember: (recordId, memberId, patch) =>
         set((s) => ({
-          runs: {
-            ...s.runs,
-            [typeId]: { ...s.runs[typeId], note, updatedAt: Date.now() },
-          },
+          records: s.records.map((r) =>
+            r.id === recordId
+              ? {
+                  ...r,
+                  party: r.party.map((m) => (m.id === memberId ? { ...m, ...patch } : m)),
+                  updatedAt: Date.now(),
+                }
+              : r,
+          ),
         })),
 
-      setCompletedAt: (typeId, date) =>
+      removePartyMember: (recordId, memberId) =>
         set((s) => ({
-          runs: {
-            ...s.runs,
-            [typeId]: { ...s.runs[typeId], completedAt: date, updatedAt: Date.now() },
-          },
+          records: s.records.map((r) =>
+            r.id === recordId
+              ? { ...r, party: r.party.filter((m) => m.id !== memberId), updatedAt: Date.now() }
+              : r,
+          ),
         })),
 
-      clearRun: (typeId) =>
+      setRecordNote: (recordId, note) =>
         set((s) => ({
-          runs: {
-            ...s.runs,
-            [typeId]: emptyRun(typeId),
-          },
+          records: s.records.map((r) =>
+            r.id === recordId ? { ...r, note, updatedAt: Date.now() } : r,
+          ),
         })),
 
-      resetAll: () => set({ runs: defaultRuns() }),
+      setRecordStatus: (recordId, status) =>
+        set((s) => ({
+          records: s.records.map((r) =>
+            r.id === recordId ? { ...r, status, updatedAt: Date.now() } : r,
+          ),
+        })),
+
+      setCompletedAt: (recordId, date) =>
+        set((s) => ({
+          records: s.records.map((r) =>
+            r.id === recordId ? { ...r, completedAt: date, updatedAt: Date.now() } : r,
+          ),
+        })),
+
+      clearRecord: (recordId) =>
+        set((s) => ({
+          records: s.records.map((r) =>
+            r.id === recordId
+              ? { ...r, party: [], note: undefined, completedAt: undefined, status: "not_started", updatedAt: Date.now() }
+              : r,
+          ),
+        })),
+
+      resetAll: () => set({ records: [] }),
     }),
     {
-      name: "er-hell-runs-v2",
-      version: 2,
+      name: "er-hell-runs-v3",
+      version: 3,
       migrate: (persistedState: any, version) => {
-        if (version < 2) {
-          // 从 v1 迁移：abilities[0..2] -> innateAbilities, abilities[3] -> chosenAbility
+        // v2 → v3：从 18 属性 runs 迁移为自由存档列表
+        if (version < 3) {
           const oldRuns = (persistedState as any)?.runs ?? {};
-          const newRuns: Record<string, TypeRun> = {};
-          for (const [key, run] of Object.entries(oldRuns) as [string, any][]) {
+          const oldDifficulty = (persistedState as any)?.difficulty ?? "HELL";
+          const oldLevelLimit = (persistedState as any)?.levelLimit ?? "elite";
+          const records: RunRecord[] = [];
+          let idx = 1;
+          for (const [, run] of Object.entries(oldRuns) as [string, any][]) {
+            if (!run) continue;
             const party = (run.party ?? []).map((m: any) => ({
-              id: m.id,
-              name: m.name,
+              id: m.id ?? genId(),
+              name: m.name ?? "",
               form: m.form,
+              chosenAbility: m.chosenAbility ?? m.abilities?.[3] ?? "",
               innateAbilities: [
-                m.abilities?.[0] ?? "",
-                m.abilities?.[1] ?? "",
-                m.abilities?.[2] ?? "",
+                m.innateAbilities?.[0] ?? m.abilities?.[0] ?? "",
+                m.innateAbilities?.[1] ?? m.abilities?.[1] ?? "",
+                m.innateAbilities?.[2] ?? m.abilities?.[2] ?? "",
               ] as [string, string, string],
-              chosenAbility: m.abilities?.[3] ?? "",
-              abilityPool: ["", "", ""] as [string, string, string],
               moves: m.moves ?? ["", "", "", ""],
               note: m.note,
             }));
-            newRuns[key] = { ...run, party };
+            if (party.length === 0 && !run.note) continue;
+            records.push({
+              id: genId(),
+              title: `通关存档 ${idx++}`,
+              difficulty: oldDifficulty,
+              levelLimit: oldLevelLimit,
+              status: run.status ?? "not_started",
+              party,
+              note: run.note,
+              completedAt: run.completedAt,
+              updatedAt: run.updatedAt ?? Date.now(),
+            });
           }
-          return { runs: newRuns };
+          return { records };
         }
         return persistedState;
       },
@@ -191,13 +216,15 @@ export const useRunStore = create<RunStore>()(
   ),
 );
 
+export const DIFFICULTY_LABELS = DIFFICULTY_CN;
+
 export function useStats() {
-  const runs = useRunStore((s) => s.runs);
-  const all = Object.values(runs);
-  const completed = all.filter((r) => r.status === "completed").length;
-  const inProgress = all.filter((r) => r.status === "in_progress").length;
-  const notStarted = all.filter((r) => r.status === "not_started").length;
-  const totalMembers = all.reduce((sum, r) => sum + r.party.length, 0);
-  const progress = Math.round((completed / TYPE_IDS.length) * 100);
-  return { completed, inProgress, notStarted, totalMembers, progress, total: TYPE_IDS.length };
+  const records = useRunStore((s) => s.records);
+  const total = records.length;
+  const completed = records.filter((r) => r.status === "completed").length;
+  const inProgress = records.filter((r) => r.status === "in_progress").length;
+  const notStarted = records.filter((r) => r.status === "not_started").length;
+  const totalMembers = records.reduce((sum, r) => sum + r.party.length, 0);
+  const progress = total === 0 ? 0 : Math.round((completed / total) * 100);
+  return { completed, inProgress, notStarted, totalMembers, progress, total };
 }

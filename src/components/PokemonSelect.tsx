@@ -1,7 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, Search, X } from "lucide-react";
 import { POKEMONS } from "@/data/pokemon";
+import { useERGameData, type ERSpecies } from "@/hooks/useERGameData";
+import { typeNamesCN } from "@/data/erPokedex";
 import type { Pokemon } from "@/data/pokemon";
+
+interface ERPokemon {
+  dex: number;
+  nameCn: string;
+  types: string[];
+}
 
 interface PokemonSelectProps {
   value: string;
@@ -41,23 +49,33 @@ export default function PokemonSelect({
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const ref = useRef<HTMLDivElement>(null);
+  const { data: erData, loading } = useERGameData();
 
-  const selected: Pokemon | undefined = useMemo(
-    () => POKEMONS.find((p) => p.nameCn === value || p.nameEn === value),
-    [value],
+  const allPokemons: (Pokemon | ERPokemon)[] = useMemo(() => {
+    if (!erData || loading) return POKEMONS;
+    const erPokemons: ERPokemon[] = erData.species.map((s) => ({
+      dex: s.dex,
+      nameCn: s.name,
+      types: s.types.map((t) => typeNamesCN[t] || t),
+    }));
+    return erPokemons;
+  }, [erData, loading]);
+
+  const selected: (Pokemon | ERPokemon) | undefined = useMemo(
+    () => allPokemons.find((p) => p.nameCn === value),
+    [value, allPokemons],
   );
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return POKEMONS.slice(0, 200);
-    return POKEMONS.filter(
+    if (!q) return allPokemons.slice(0, 200);
+    return allPokemons.filter(
       (p) =>
         p.nameCn.includes(q) ||
-        p.nameEn.toLowerCase().includes(q) ||
         String(p.dex).padStart(4, "0") === q.padStart(4, "0") ||
         String(p.dex) === q,
     ).slice(0, 200);
-  }, [query]);
+  }, [query, allPokemons]);
 
   useEffect(() => {
     if (!open) return;
@@ -160,11 +178,6 @@ export default function PokemonSelect({
                   <span className="flex-1 truncate text-sm font-medium text-ink-800">
                     {p.nameCn}
                   </span>
-                  {p.nameEn && (
-                    <span className="flex-shrink-0 truncate text-[11px] text-ink-500">
-                      {p.nameEn}
-                    </span>
-                  )}
                   {p.nameCn === value && (
                     <span
                       className="flex-shrink-0 rounded px-1 py-0.5 text-[10px] text-white"

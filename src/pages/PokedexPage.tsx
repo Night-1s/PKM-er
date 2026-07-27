@@ -27,16 +27,41 @@ const getPokemonImgUrls = (name: string, dexId?: number): string[] => {
   spriteName = spriteName.replace(/-PALDEA$/, '_PALDEA');
 
   const urls: string[] = [];
-  // 主源：作者图鉴
-  urls.push(`${ER_SPRITE_BASE}/${spriteName}.png`);
+  const baseName = spriteName.split('_')[0];
 
-  // Mega 的基础形态作为备用
-  if (spriteName.includes('_MEGA')) {
-    const base = spriteName.replace('_MEGA', '');
-    urls.push(`${ER_SPRITE_BASE}/${base}.png`);
+  const specialCases: [RegExp, string[]][] = [
+    [/^BURMY_SANDY/, ['BURMY_SANDY_CLOAK', 'BURMY']],
+    [/^BURMY_TRASH/, ['BURMY_TRASH_CLOAK', 'BURMY']],
+    [/^BURMY_ETERNA/, ['BURMY_ETERNA', 'BURMY']],
+    [/^WORMADAM_SANDY/, ['WORMADAM_SANDY_CLOAK', 'WORMADAM']],
+    [/^WORMADAM_TRASH/, ['WORMADAM_TRASH_CLOAK', 'WORMADAM']],
+  ];
+
+  let matched = false;
+  for (const [re, candidates] of specialCases) {
+    if (re.test(spriteName)) {
+      for (const c of candidates) {
+        urls.push(`${ER_SPRITE_BASE}/${c}.png`);
+      }
+      matched = true;
+      break;
+    }
   }
 
-  // dexId 兜底（PokeAPI 数字编号）
+  if (!matched) {
+    urls.push(`${ER_SPRITE_BASE}/${spriteName}.png`);
+
+    if (spriteName.includes('_MEGA')) {
+      const base = spriteName.replace('_MEGA', '');
+      urls.push(`${ER_SPRITE_BASE}/${base}.png`);
+    }
+
+    if (spriteName.includes('_REDUX')) {
+      const base = spriteName.replace(/_REDUX.*/, '');
+      urls.push(`${ER_SPRITE_BASE}/${base}.png`);
+    }
+  }
+
   if (dexId && dexId > 0) {
     urls.push(`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/home/${dexId}.png`);
     urls.push(`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${dexId}.png`);

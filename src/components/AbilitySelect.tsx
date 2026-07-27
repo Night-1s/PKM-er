@@ -13,6 +13,8 @@ interface AbilitySelectProps {
   label?: string;
   /** 是否显示描述卡片 */
   showDesc?: boolean;
+  /** 候选特性列表（如某只宝可梦拥有的特性） */
+  candidateAbilities?: string[];
 }
 
 /**
@@ -26,6 +28,7 @@ export default function AbilitySelect({
   accentColor = "#2563EB",
   label,
   showDesc = true,
+  candidateAbilities,
 }: AbilitySelectProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -37,14 +40,24 @@ export default function AbilitySelect({
     [value],
   );
 
+  const sourceAbilities = useMemo(() => {
+    if (!candidateAbilities || candidateAbilities.length === 0) return ABILITIES;
+    const result: Ability[] = [];
+    for (const name of candidateAbilities) {
+      const a = ABILITIES.find((x) => x.name === name);
+      if (a) result.push(a);
+    }
+    return result;
+  }, [candidateAbilities]);
+
   // 过滤
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return ABILITIES.slice(0, 200);
-    return ABILITIES.filter(
+    if (!q) return sourceAbilities;
+    return sourceAbilities.filter(
       (a) => a.name.toLowerCase().includes(q) || a.desc.toLowerCase().includes(q),
     ).slice(0, 200);
-  }, [query]);
+  }, [query, sourceAbilities]);
 
   // 点击外部关闭
   useEffect(() => {
